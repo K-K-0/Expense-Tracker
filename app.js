@@ -10,17 +10,21 @@ const app = express()
 app.use(express.json())
 
 
-const protected = (req, res, next) => {
-  const token = req.header('Authorization')
-  if(!token) return res.status(401).json({massage: "unAuthorized"})
+const Protected = (req, res, next) => {
+  const token = req.header('Authorization')?.split(' ')[1]
+
+  if(!token) { 
+    return res.status(401).json({massage: "unAuthorized"})
+  }
 
   jwt.verify(token, "Ad", (err, user) => {
-    if (err) return res.status(403).json({ massage : "forbidden"})
+    if (err) { 
+      return res.status(403).json({ massage : "Forbidden"})
+    } 
     req.user = user
-    next()
+    next();
   })
 }
-
 
 app.post('/signup', async (req,res) => {
   const { name, email, password } = req.body
@@ -59,8 +63,9 @@ app.post('/login', async (req,res) => {
 })
 
 
-app.post('/api/create', protected, async (req,res) => {
-  const { title, amount, category, userId} = req.body
+app.post('/api/create', Protected, async (req,res) => {
+  const { title, amount, category} = req.body
+  const userId = req.user.userid
 
   if (!userId) {
     return res.status(400).json({ error: "User ID is required" });
@@ -72,7 +77,7 @@ app.post('/api/create', protected, async (req,res) => {
         title,
         amount,
         category,
-        user: { connect: {id: userId} }
+        userId: userId
       }
     })
 
@@ -88,16 +93,18 @@ app.post('/api/create', protected, async (req,res) => {
   }
 })
 
-app.get('/api/expenses', protected, (req,res) => {
-  res.send("Get expense");  
-  
+app.get('/api/expense', Protected, async (req,res) => {
+  const  userId  = req.user.userid
+  if(!userId) return res.json({massage: "id is not provided by token"})
+  const expense = await prisma.expense.findMany({
+    where: {
+      userId: Number(userId)
+    }
+  });
+  res.json({ expense })
 })
 
-app.get('/api/expense/id', protected, (req,res) => {
-  res.send("get a single expense");
-})
-
-app.put("/api/update", protected ,(req,res) => {
+app.put("/api/update", Protected ,(req,res) => {
   res.send("update");
 })
 
