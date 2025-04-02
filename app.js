@@ -2,11 +2,12 @@ const { PrismaClient } = require("@prisma/client");
 const express = require ("express")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
-
+const cors = require("cors")
 
 const prisma = new PrismaClient()
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 
@@ -93,6 +94,7 @@ app.post('/api/create', Protected, async (req,res) => {
   }
 })
 
+
 app.get('/api/expense', Protected, async (req,res) => {
   const  userId  = req.user.userid
   if(!userId) return res.json({massage: "id is not provided by token"})
@@ -104,10 +106,36 @@ app.get('/api/expense', Protected, async (req,res) => {
   res.json({ expense })
 })
 
-app.put("/api/update", Protected ,(req,res) => {
-  res.send("update");
+
+app.put("/api/update/:id", Protected , async(req,res) => {
+  const userId = req.user.userid
+  const  id  = Number(req.params.id)
+  const { title, amount, category } = req.body
+  
+
+  const exist = await prisma.expense.findFirst({ where: { id, userId } })
+  
+  const updatedExpense = await prisma.expense.update({
+    where: {
+      id
+    },
+    data: {
+      title,
+      amount,
+      category
+    }
+  })
+  res.json({updatedExpense})
 })
 
+
+app.delete( '/api/delete/:id', Protected, async (req,res) => {
+  const id = Number(req.params.id)
+  
+  const Delete = await prisma.expense.delete({where: { id }})
+  
+  res.json({ massage: "expense have been deleted"})
+})
 
 
 app.listen(3000)

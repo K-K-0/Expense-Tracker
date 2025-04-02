@@ -17,7 +17,7 @@ model User {
 }
 
 model Expense {
-  id        String @id @default(uuid())
+  id        Int @id @default(autoincrement())
   title     String
   amount    Int
   category  String
