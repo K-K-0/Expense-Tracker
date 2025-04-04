@@ -42,7 +42,7 @@ app.post('/signup', async (req,res) => {
   const token = jwt.sign({userid: user.id}, "Ad")
   res.json({token})
 
-  res.json(user)
+  return res.json(user)
 })
 
 
@@ -50,13 +50,13 @@ app.post('/login', async (req,res) => {
   const { email , password } = req.body
 
   const user = await prisma.user.findFirst({
-    where: { email}
+    where: { email }
   })
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({
-      massage: "Invalid credentials"
-    })
+  const isMatch = await bcrypt.compare(password, user.password)
+
+  if(!isMatch) {
+    return res.status(401).json({ massage: 'invalid password'})
   }
 
   const token = jwt.sign({userid: user.id}, "Ad")
