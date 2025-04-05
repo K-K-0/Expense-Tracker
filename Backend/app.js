@@ -131,8 +131,14 @@ app.put("/api/update/:id", Protected , async(req,res) => {
 
 app.delete( '/api/delete/:id', Protected, async (req,res) => {
   const id = Number(req.params.id)
+  const userId = req.user.userid
   
-  const Delete = await prisma.expense.delete({where: { id }})
+  const Delete = await prisma.expense.deleteMany({
+    where: {
+      id: Number(id),
+      userId: userId
+    }
+  })
   
   res.json({ massage: "expense have been deleted"})
 })

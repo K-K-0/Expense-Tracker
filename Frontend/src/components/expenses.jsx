@@ -4,23 +4,24 @@ import axios from "axios";
 function Expenses() {
     const [expenses, setExpenses] = useState([]);
 
+    const fetchExpenses = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get("http://localhost:3000/api/expense", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setExpenses(res.data.expense);
+        } catch (error) {
+            console.error("Error fetching expenses:", error);
+            alert("Failed to fetch expenses");
+        }
+    };
+
+   
+
     useEffect(() => {
-        const fetchExpenses = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:3000/api/expense', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                setExpenses(res.data.expense); // assuming your backend sends { expense: [...] }
-            } catch (error) {
-                console.error("Error fetching expenses:", error);
-                alert("Failed to fetch expenses");
-            }
-        };
-
         fetchExpenses();
     }, []);
 
@@ -30,12 +31,18 @@ function Expenses() {
             {expenses.length === 0 ? (
                 <p>No expenses found.</p>
             ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                     {expenses.map((exp) => (
-                        <li key={exp.id} className="p-3 border rounded shadow bg-white">
-                            <div><strong>Title:</strong> {exp.title}</div>
-                            <div><strong>Amount:</strong> ₹{exp.amount}</div>
-                            <div><strong>Category:</strong> {exp.category}</div>
+                        <li
+                            key={exp.id}
+                            className="flex justify-between items-center p-4 border rounded shadow bg-white"
+                        >
+                            <div>
+                                <p><strong>Title:</strong> {exp.title}</p>
+                                <p><strong>Amount:</strong> ₹{exp.amount}</p>
+                                <p><strong>Category:</strong> {exp.category}</p>
+                            </div>
+                            
                         </li>
                     ))}
                 </ul>

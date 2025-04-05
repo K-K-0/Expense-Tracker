@@ -8,32 +8,35 @@ function Dashboard() {
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchExpenses = async () => {
-            try {
-                const token = localStorage.getItem("token");
+    // ⬇️ Move this outside useEffect so it can be reused in handleDelete
+    const fetchExpenses = async () => {
+        try {
+            const token = localStorage.getItem("token");
 
-                if (!token) {
-                    navigate("/login");
-                    return;
-                }
-
-                const res = await axios.get("http://localhost:3000/api/expense", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-
-                setExpenses(res.data.expense || []);
-                setLoading(false);
-            } catch (err) {
-                setError("Failed to load expenses.", err);
-                setLoading(false);
+            if (!token) {
+                navigate("/login");
+                return;
             }
-        };
 
+            const res = await axios.get("http://localhost:3000/api/expense", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setExpenses(res.data.expense || []);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error fetching expenses:", err);
+            setError("Failed to load expenses.");
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchExpenses();
     }, [navigate]);
+
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
